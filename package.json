@@ -8,6 +8,7 @@
     "binance-api-node": "^0.11.13",
     "coingecko-api-v3": "0.0.13",
     "messaging-api-telegram": "^1.1.0",
+    "moment": "^2.29.4",
     "near-api-js": "^0.42.0",
     "node-abort-controller": "^3.0.1",
     "web3": "^1.8.2"
