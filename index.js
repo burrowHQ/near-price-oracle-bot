@@ -51,14 +51,14 @@ const TestnetCoins = {
     pyth: "0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace", // Crypto.ETH/USD
     fractionDigits: 2,
   },
-  "usdt.fakes.testnet": {
+  "usdte.ft.ref-labs.testnet": {
     decimals: 6,
     stablecoin: true,
     coingecko: "tether",
     chainlink: "0x3E7d1eAB13ad0104d2750B8863b489D65364e32D",
     pyth: "0x2b89b9dc8fdf9f34709a5b106b472f0f39bb6ca9ce04b0fd7f2e971688e2e53b", // Crypto.USDT/USD
   },
-  "usdc.fakes.testnet": {
+  "usdce.ft.ref-labs.testnet": {
     decimals: 6,
     stablecoin: true,
     coingecko: "usd-coin",
@@ -68,7 +68,7 @@ const TestnetCoins = {
     chainlink: "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6",
     pyth: "0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a", // Crypto.USDC/USD
   },
-  "dai.fakes.testnet": {
+  "daie.ft.ref-labs.testnet": {
     decimals: 18,
     stablecoin: true,
     coingecko: "dai",
@@ -79,7 +79,7 @@ const TestnetCoins = {
     chainlink: "0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9",
     pyth: "0xb0948a5e5313200c632b51bb5ca32f6de0d36e9950a942d19751e833f70dabfd", // Crypto.DAI/USD
   },
-  "wbtc.fakes.testnet": {
+  "wbtc.ft.ref-labs.testnet": {
     decimals: 8,
     coingecko: "wrapped-bitcoin",
     binance: "BTCUSDT",
@@ -91,7 +91,7 @@ const TestnetCoins = {
     pyth: "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43", // Crypto.BTC/USD
     fractionDigits: 2,
   },
-  "aurora.fakes.testnet": {
+  "aurora.ft.ref-labs.testnet": {
     decimals: 18,
     coingecko: "aurora-near",
     cryptocom: "AURORA_USDT",
@@ -102,7 +102,7 @@ const TestnetCoins = {
     relativeDiff: 0.01, // 1%
     fractionDigits: 5,
   },
-  "woo.orderly.testnet": {
+  "woo.ft.ref-labs.testnet": {
     decimals: 18,
     coingecko: "woo-network",
     binance: "WOOUSDT",
@@ -114,7 +114,7 @@ const TestnetCoins = {
     relativeDiff: 0.01, // 1%
     fractionDigits: 6,
   },
-  "fraxtoken.testnet": {
+  "frax.ft.ref-labs.testnet": {
     decimals: 18,
     stablecoin: true,
     coingecko: "frax",
@@ -441,17 +441,115 @@ const MainnetComputeCoins = {
 };
 
 const TestnetComputeCoins = {
-  "weth.fakes.testnet": {
+  "stnear.ft.ref-labs.testnet": {
+    dependencyCoin: "wrap.testnet",
+    computeCall: async (dependencyPrice) => {
+      if (!dependencyPrice) {
+        return null;
+      }
+      try {
+        const metadata = await near.NearView(
+          "meta-v2.pool.testnet",
+          "ft_metadata",
+          {}
+        );
+        if (metadata.decimals !== 24) {
+          return null;
+        }
+        const rawStNearState = await near.NearView(
+          "meta-v2.pool.testnet",
+          "get_contract_state",
+          {}
+        );
+        const stNearMultiplier =
+          parseFloat(rawStNearState.st_near_price) / 1e24;
+        // TODO: Update 1.34 in about 1 year (Jul, 2024)
+        // if (stNearMultiplier < 1.21 || stNearMultiplier > 1.34) {
+        //   console.error("stNearMultiplier is out of range:", stNearMultiplier);
+        //   return null;
+        // }
+        return {
+          multiplier: Math.round(dependencyPrice.multiplier * stNearMultiplier),
+          decimals: dependencyPrice.decimals,
+        };
+      } catch (e) {
+        console.log(e);
+        return null;
+      }
+    },
+  },
+  "linear.ft.ref-labs.testnet": {
+    dependencyCoin: "wrap.testnet",
+    computeCall: async (dependencyPrice) => {
+      if (!dependencyPrice) {
+        return null;
+      }
+      try {
+        const rawLiNearPrice = await near.NearView(
+          "linear-protocol.testnet",
+          "ft_price",
+          {}
+        );
+        const liNearMultiplier = parseFloat(rawLiNearPrice) / 1e24;
+        // TODO: Update 1.25 in about 1 year (July, 2024)
+        // if (liNearMultiplier < 1.13 || liNearMultiplier > 1.25) {
+        //   console.error("liNearMultiplier is out of range:", liNearMultiplier);
+        //   return null;
+        // }
+        return {
+          multiplier: Math.round(dependencyPrice.multiplier * liNearMultiplier),
+          decimals: dependencyPrice.decimals,
+        };
+      } catch (e) {
+        console.log(e);
+        return null;
+      }
+    },
+  },
+  "nearxv2.ft.ref-labs.testnet": {
+    dependencyCoin: "wrap.testnet",
+    computeCall: async (dependencyPrice) => {
+      if (!dependencyPrice) {
+        return null;
+      }
+      try {
+        const nearXPrice = await near.NearView(
+          "v2-nearx.staderlabs.testnet",
+          "get_nearx_price",
+          {}
+        );
+        const nearXMultiplier = parseFloat(nearXPrice) / 1e24;
+        // TODO: Update 1.25 in about 1 year (July, 2024)
+        // if (nearXMultiplier < 1.13 || nearXMultiplier > 1.25) {
+        //   console.error("nearXMultiplier is out of range:", nearXMultiplier);
+        //   return null;
+        // }
+        return {
+          multiplier: Math.round(dependencyPrice.multiplier * nearXMultiplier),
+          decimals: dependencyPrice.decimals,
+        };
+      } catch (e) {
+        console.log(e);
+        return null;
+      }
+    },
+  },
+  "eth.ft.ref-labs.testnet": {
     dependencyCoin: "aurora",
     computeCall: async (dependencyPrice) => dependencyPrice,
   },
-  "usdn.testnet": computeUsn("usdn.testnet", "usdt.fakes.testnet", 356),
-  "3e2210e1184b45b64c8a434c0a7e7b23cc04ea7eb7a6c3c32520d03d4afcb8af": {
-    dependencyCoin: "usdc.fakes.testnet",
+  // "usdn.testnet": computeUsn("usdn.testnet", "usdt.fakes.testnet", 356),
+  "usdtt.ft.ref-labs.testnet": {
+    dependencyCoin:
+      "usdte.ft.ref-labs.testnet",
     computeCall: async (dependencyPrice) => dependencyPrice,
   },
-  "s.fraxtoken.testnet": {
-    dependencyCoin: "fraxtoken.testnet",
+  "usdcc.ft.ref-labs.testnet": {
+    dependencyCoin: "usdce.ft.ref-labs.testnet",
+    computeCall: async (dependencyPrice) => dependencyPrice,
+  },
+  "sfrax.ft.ref-labs.testnet": {
+    dependencyCoin: "frax.ft.ref-labs.testnet",
     computeCall: computeSFrax,
   },
 };
