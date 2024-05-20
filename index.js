@@ -534,6 +534,99 @@ const TestnetComputeCoins = {
       }
     },
   },
+  "meta-v2.pool.testnet": {
+    dependencyCoin: "wrap.testnet",
+    computeCall: async (dependencyPrice) => {
+      if (!dependencyPrice) {
+        return null;
+      }
+      try {
+        const metadata = await near.NearView(
+          "meta-v2.pool.testnet",
+          "ft_metadata",
+          {}
+        );
+        if (metadata.decimals !== 24) {
+          return null;
+        }
+        const rawStNearState = await near.NearView(
+          "meta-v2.pool.testnet",
+          "get_contract_state",
+          {}
+        );
+        const stNearMultiplier =
+          parseFloat(rawStNearState.st_near_price) / 1e24;
+        // TODO: Update 1.34 in about 1 year (Jul, 2024)
+        // if (stNearMultiplier < 1.21 || stNearMultiplier > 1.34) {
+        //   console.error("stNearMultiplier is out of range:", stNearMultiplier);
+        //   return null;
+        // }
+        return {
+          multiplier: Math.round(dependencyPrice.multiplier * stNearMultiplier),
+          decimals: dependencyPrice.decimals,
+        };
+      } catch (e) {
+        console.log(e);
+        return null;
+      }
+    },
+  },
+  "linear-protocol.testnet": {
+    dependencyCoin: "wrap.testnet",
+    computeCall: async (dependencyPrice) => {
+      if (!dependencyPrice) {
+        return null;
+      }
+      try {
+        const rawLiNearPrice = await near.NearView(
+          "linear-protocol.testnet",
+          "ft_price",
+          {}
+        );
+        const liNearMultiplier = parseFloat(rawLiNearPrice) / 1e24;
+        // TODO: Update 1.25 in about 1 year (July, 2024)
+        // if (liNearMultiplier < 1.13 || liNearMultiplier > 1.25) {
+        //   console.error("liNearMultiplier is out of range:", liNearMultiplier);
+        //   return null;
+        // }
+        return {
+          multiplier: Math.round(dependencyPrice.multiplier * liNearMultiplier),
+          decimals: dependencyPrice.decimals,
+        };
+      } catch (e) {
+        console.log(e);
+        return null;
+      }
+    },
+  },
+  "v2-nearx.staderlabs.testnet": {
+    dependencyCoin: "wrap.testnet",
+    computeCall: async (dependencyPrice) => {
+      if (!dependencyPrice) {
+        return null;
+      }
+      try {
+        const nearXPrice = await near.NearView(
+          "v2-nearx.staderlabs.testnet",
+          "get_nearx_price",
+          {}
+        );
+        const nearXMultiplier = parseFloat(nearXPrice) / 1e24;
+        // TODO: Update 1.25 in about 1 year (July, 2024)
+        // if (nearXMultiplier < 1.13 || nearXMultiplier > 1.25) {
+        //   console.error("nearXMultiplier is out of range:", nearXMultiplier);
+        //   return null;
+        // }
+        return {
+          multiplier: Math.round(dependencyPrice.multiplier * nearXMultiplier),
+          decimals: dependencyPrice.decimals,
+        };
+      } catch (e) {
+        console.log(e);
+        return null;
+      }
+    },
+  },
   "eth.ft.ref-labs.testnet": {
     dependencyCoin: "aurora",
     computeCall: async (dependencyPrice) => dependencyPrice,
