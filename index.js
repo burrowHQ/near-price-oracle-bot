@@ -649,6 +649,10 @@ const TestnetComputeCoins = {
     dependencyCoin: "wbtc.ft.ref-labs.testnet",
     computeCall: async (dependencyPrice) => dependencyPrice,
   },
+  "nbtc2-nsp.testnet": {
+    dependencyCoin: "wbtc.ft.ref-labs.testnet",
+    computeCall: async (dependencyPrice) => dependencyPrice,
+  },
 };
 
 const mainnet = nearConfig.networkId === "mainnet";
